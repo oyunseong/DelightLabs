@@ -3,11 +3,14 @@ package com.oys.delightlabs.ui.screen.transaction
 import android.util.Log
 import androidx.core.util.toRange
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.oys.delightlabs.data.repository.TransactionRepository
 import com.oys.delightlabs.ui.screen.transaction.graph.GraphModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 
 class TransactionScreenViewModel(
@@ -19,6 +22,9 @@ class TransactionScreenViewModel(
         MutableStateFlow(TransactionUiState())
     val uiState = _uiState.asStateFlow()
 
+    init {
+        getGraphModel()
+    }
     fun updateUiState(action: TransactionUiState.() -> TransactionUiState) {
         _uiState.update {
             action.invoke(it)
@@ -26,33 +32,36 @@ class TransactionScreenViewModel(
     }
 
     fun getGraphModel(): GraphModel {
-        val t = transactionRepository.filterTransaction().also {
-            val amounts = it.map { it.amount }.sorted()
-            Log.d("++##", amounts.toString())
+        viewModelScope.launch(Dispatchers.IO) {
+            transactionRepository.getTransactions(7, 30).also {
+                val amounts = it.map { it.amount }.sorted()
+                Log.d("++##", amounts.toString())
+            }
         }
 
-//        val xValues = IntRange(1, t.size).toList()
-        val a = t.map { it.amount }
-        val yStep = calculateYStep(
-            points = a,
-            stepCount = a.size
-        ).also {
-            Log.d("++##", "yStep=$it")
-        }
 
-        val max = a.max()
-        val min = a.min()
-
-
-        val divide = 10
-        val range = max - min
-        val step = range / divide
+////        val xValues = IntRange(1, t.size).toList()
+//        val a = t.map { it.amount }
+//        val yStep = calculateYStep(
+//            points = a,
+//            stepCount = a.size
+//        ).also {
+//            Log.d("++##", "yStep=$it")
+//        }
+//
+//        val max = a.max()
+//        val min = a.min()
+//
+//
+//        val divide = 10
+//        val range = max - min
+//        val step = range / divide
 
         return GraphModel(
             xValues = listOf(1, 2, 3, 4, 5, 6, 7),
-            yValues = generateYValues(a, step),
-            points = a, //그래프,
-            verticalStep = step,
+            yValues =  listOf(1f, 2f, 3f),
+            points =  listOf(1f, 2f), //그래프,
+            verticalStep = 2000f,
         )
     }
 
@@ -63,21 +72,21 @@ class TransactionScreenViewModel(
 
         var currentValue = min
         val result = mutableListOf<Float>()
-        while (true) {
-            if (result.isEmpty()) {
-                result.add(min)
-                Log.d("++##","add min $min / result : $result")
-            } else {
-                currentValue += step
-                if (currentValue > max) {
-                    Log.d("++##","break / result : $result")
-                    break
-                }else{
-                    Log.d("++##","add $currentValue / result : $result")
-                    result.add(currentValue)
-                }
-            }
-        }
+//        while (true) {
+//            if (result.isEmpty()) {
+//                result.add(min)
+//                Log.d("++##","add min $min / result : $result")
+//            } else {
+//                currentValue += step
+//                if (currentValue > max) {
+//                    Log.d("++##","break / result : $result")
+//                    break
+//                }else{
+//                    Log.d("++##","add $currentValue / result : $result")
+//                    result.add(currentValue)
+//                }
+//            }
+//        }
         Log.d("++##", "result : $result")
         return result
     }

@@ -38,10 +38,10 @@ fun TransactionsScreen(
     val uiState by viewModel.uiState.collectAsState()
 
     LaunchedEffect(key1 = Unit, block = {
-        delay(2000)
-        viewModel.updateUiState {
-            copy(test = "test1")
-        }
+//        delay(2000)
+//        viewModel.updateUiState {
+//            copy(test = "test1")
+//        }
     })
 
     Column(
@@ -59,9 +59,9 @@ fun TransactionsScreen(
         ) {
             VerticalSpacer(dp = 2.dp)
             CategoryButton()
-            GraphScreen(
-                graphModel = viewModel.getGraphModel()
-            )
+//            GraphScreen(
+//                graphModel = viewModel.getGraphModel()
+//            )
             RecentTransactions()
         }
     }
