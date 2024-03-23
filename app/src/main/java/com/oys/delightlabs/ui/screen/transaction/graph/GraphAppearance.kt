@@ -10,5 +10,4 @@ data class GraphAppearance(
     val colorAreaUnderChart: Color,
     val isCircleVisible: Boolean,
     val circleColor: Color,
-    val backgroundColor: Color
 )

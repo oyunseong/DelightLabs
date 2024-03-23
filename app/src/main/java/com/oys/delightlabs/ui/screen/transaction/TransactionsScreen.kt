@@ -25,6 +25,8 @@ import com.oys.delightlabs.R
 import com.oys.delightlabs.ui.component.ToolBar
 import com.oys.delightlabs.ui.component.VerticalSpacer
 import com.oys.delightlabs.ui.extension.noRippleClickable
+import com.oys.delightlabs.ui.screen.transaction.graph.GraphModel
+import com.oys.delightlabs.ui.screen.transaction.graph.GraphScreen
 import com.oys.delightlabs.ui.theme.Gray100
 import com.oys.delightlabs.ui.theme.Gray650
 import com.oys.delightlabs.ui.theme.body3
@@ -58,9 +60,12 @@ fun TransactionsScreen(
                     vm.emitUiEvent(TransactionUiEvent.SelectTransactionTab(it))
                 }
             )
-//            GraphScreen(
-//                graphModel = viewModel.getGraphModel()
-//            )
+            if (uiState.income != GraphModel.empty && uiState.expense != GraphModel.empty) {
+                GraphScreen(
+                    incomeGraphModel = uiState.income,
+                    expenseGraphModel = uiState.expense,
+                )
+            }
             RecentTransactions(
                 categories = uiState.transactionCategories,
                 selectedCategory = uiState.selectedTransactionCategory,
