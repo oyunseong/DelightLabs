@@ -1,4 +1,4 @@
-package com.oys.delightlabs.extension
+package com.oys.delightlabs.util
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString

@@ -7,14 +7,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -23,6 +20,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.oys.delightlabs.R
+import com.oys.delightlabs.data.repository.Transaction
 import com.oys.delightlabs.ui.component.HorizontalSpacer
 import com.oys.delightlabs.ui.component.VerticalSpacer
 import com.oys.delightlabs.ui.extension.noRippleClickable
@@ -35,8 +33,12 @@ import com.oys.delightlabs.ui.theme.mainColor
 import com.oys.delightlabs.ui.theme.subhead1
 
 @Composable
-fun RecentTransactions() {
-    var c by remember { mutableStateOf(TransactionCategory.ALL) }   // TODO viewModel까지 이동
+fun RecentTransactions(
+    categories: List<TransactionCategory> = emptyList(),
+    selectedCategory: TransactionCategory,
+    transactionPage: List<TransactionPage> = emptyList(),
+    onSelect: (TransactionCategory) -> Unit = {}
+) {
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
@@ -47,57 +49,60 @@ fun RecentTransactions() {
         )
         VerticalSpacer(dp = 30.dp)
         TransactionCategory(
-            selectedCategory = c,
+            selectedCategory = selectedCategory,
+            categories = categories,
             onClick = {
-                c = it
+                onSelect(it)
             }
         )
         VerticalSpacer(dp = 30.dp)
-        TransactionList()
-    }
-}
-
-enum class TransactionCategory {
-    ALL,
-    EXPENSE,
-    INCOME
-}
-
-@Composable
-fun TransactionCategory(
-    selectedCategory: TransactionCategory = TransactionCategory.ALL,
-    categories: List<TransactionCategory> = listOf(
-        TransactionCategory.ALL,
-        TransactionCategory.EXPENSE,
-        TransactionCategory.INCOME
-    ),
-    onClick: (TransactionCategory) -> Unit = {}
-) {
-    Row {
-        categories.forEach {
-            Text(
-                modifier = Modifier.noRippleClickable {
-                    onClick.invoke(it)
-                },
-                text = it.name,
-                color = if (it == selectedCategory) mainColor else Gray400,
-                style = body3
+        transactionPage.find { it.category == selectedCategory }?.let {
+            TransactionPage(
+                page = it
             )
-            HorizontalSpacer(dp = 25.dp)
         }
     }
 }
 
 @Composable
-fun TransactionList() {
-    repeat(20) {
-        TransactionItem()
+fun TransactionCategory(
+    categories: List<TransactionCategory> = emptyList(),
+    selectedCategory: TransactionCategory = TransactionCategory.ALL,
+    onClick: (TransactionCategory) -> Unit = {}
+) {
+    Row(
+        modifier = Modifier
+            .padding(vertical = 4.dp, horizontal = 8.dp)
+            .clip(RoundedCornerShape(50)),
+    ) {
+        categories.forEach { category ->
+            val selected = selectedCategory == category
+            Text(
+                modifier = Modifier.noRippleClickable {
+                    onClick.invoke(category)
+                },
+                text = category.text,
+                color = if (selected) mainColor else Gray400,
+                style = body3
+            )
+        }
+    }
+}
+
+@Composable
+fun TransactionPage(
+    page: TransactionPage
+) {
+    repeat(page.transaction.size) {
+        TransactionItem(page.transaction[it])
         VerticalSpacer(dp = 20.dp)
     }
 }
 
 @Composable
-fun TransactionItem() {
+fun TransactionItem(
+    transaction: Transaction,
+) {
     Row(modifier = Modifier) {
         Box(
             modifier = Modifier
@@ -109,13 +114,13 @@ fun TransactionItem() {
         Column {
             Row(modifier = Modifier.fillMaxWidth()) {
                 Text(
-                    text = "name",
+                    text = transaction.name,
                     style = body3.copy(fontWeight = FontWeight.Medium),
                     color = Color.Black
                 )
                 Spacer(modifier = Modifier.weight(1f))
                 Text(
-                    text = "-$432.9",
+                    text = "$${transaction.amount}",
                     style = body3.copy(fontWeight = FontWeight.Bold),
                     color = mainColor
                 )
@@ -123,13 +128,13 @@ fun TransactionItem() {
             VerticalSpacer(dp = 1.dp)
             Row(modifier = Modifier.fillMaxWidth()) {
                 Text(
-                    text = "name",
+                    text = transaction.type,
                     style = body2.copy(fontWeight = FontWeight.Normal),
                     color = Gray650
                 )
                 Spacer(modifier = Modifier.weight(1f))
                 Text(
-                    text = "3.30 AM",
+                    text = "${transaction.date}",
                     style = body2.copy(fontWeight = FontWeight.Normal),
                     color = Gray650
                 )
@@ -146,6 +151,9 @@ private fun RecentTransactionsPreview() {
             .background(Color.White)
             .fillMaxSize()
     ) {
-        RecentTransactions()
+        RecentTransactions(
+            categories = TransactionCategory.INITIAL,
+            selectedCategory = TransactionCategory.ALL
+        )
     }
 }

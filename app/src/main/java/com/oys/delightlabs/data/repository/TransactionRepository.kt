@@ -1,46 +1,42 @@
 package com.oys.delightlabs.data.repository
 
-import android.content.Context
-import android.util.Log
-import com.oys.delightlabs.DelightLabsApp
-import com.oys.delightlabs.R
-import com.oys.delightlabs.extension.json
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.json.decodeFromStream
-import java.util.Date
+import com.oys.delightlabs.util.toDate
+import java.sql.Time
 import java.util.concurrent.TimeUnit
 
+enum class TransactionType {
+    All, EXPENSE, INCOME
+}
+
+private val fakeToday = "2024-06-30T23:59:00Z".toDate()!!.time
+
 class TransactionRepository(
-    private val context: Context = DelightLabsApp.context
+    private val transactionApi: TransactionApi = TransactionApi()
 ) {
 
-    @OptIn(ExperimentalSerializationApi::class)
-    private suspend fun getAllTransactions(): List<Transaction> {
-        return withContext(Dispatchers.Default) {
-            val inputStream = context.resources.openRawResource(R.raw.jsonformatter)
-            val transactions = json.decodeFromStream<List<Transaction>>(inputStream)
-            Log.d("TransactionRepository", transactions.size.toString() + " transactions=${transactions.firstOrNull()}")
-            return@withContext transactions
-        }
-    }
-
-    suspend fun getTransactions(
-        day: Long,
-        size: Int,
+    suspend fun getRecentTransactions(
+        size: Int = 20,
+        type: TransactionType = TransactionType.All
     ): List<Transaction> {
-        val allTransactions = getAllTransactions()
-        val transactions  = allTransactions
-            .takeLast(size)
-            .filter { it.date?.inDay(day) == true }
-
-        return transactions.also {
-            Log.d("TransactionRepository", "getTransactions($day): $transactions")
+        val allTransactions = transactionApi.getAllTransactions() //정렬된 데이터라고 가정함.
+        val transactions = when (type) {
+            TransactionType.All -> allTransactions.takeLast(size)
+            TransactionType.EXPENSE -> allTransactions.filter { it.amount < 0 }.takeLast(size)
+            TransactionType.INCOME -> allTransactions.filter { it.amount > 0 }.takeLast(size)
         }
+        return transactions
     }
 
-    private fun Date.inDay(day:  Long): Boolean {
-        return time > System.currentTimeMillis() - TimeUnit.DAYS.toMillis(day)
+    /**
+     * 최근 n일 간의 거래내역을 가져온다.
+     */
+    suspend fun filterTransaction(day: Long): List<Transaction> {
+        val allTransactions = transactionApi.getAllTransactions()
+        val transactions = allTransactions
+            .takeLast(50) //너무 오래 걸려서 임시로 설정
+            .filter {
+                (it.date?.time ?: 0) >= fakeToday - TimeUnit.DAYS.toMillis(day)
+            }
+        return transactions
     }
 }
