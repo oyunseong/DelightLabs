@@ -17,6 +17,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.oys.delightlabs.R
@@ -85,6 +87,7 @@ fun TransactionCategory(
                 color = if (selected) mainColor else Gray400,
                 style = body3
             )
+            HorizontalSpacer(dp = 25.dp)
         }
     }
 }
@@ -114,27 +117,37 @@ fun TransactionItem(
         Column {
             Row(modifier = Modifier.fillMaxWidth()) {
                 Text(
+                    modifier = Modifier.weight(1f),
                     text = transaction.name,
                     style = body3.copy(fontWeight = FontWeight.Medium),
-                    color = Color.Black
+                    color = Color.Black,
+                    overflow = TextOverflow.Ellipsis,
+                    maxLines = 1,
                 )
-                Spacer(modifier = Modifier.weight(1f))
+                HorizontalSpacer(dp = 4.dp)
                 Text(
-                    text = "$${transaction.amount}",
+                    text = if (transaction.amount < 0) {
+                        "-$${-transaction.amount}"
+                    } else {
+                        "+$${transaction.amount}"
+                    },
                     style = body3.copy(fontWeight = FontWeight.Bold),
-                    color = mainColor
+                    color = mainColor,
+                    maxLines = 1,
                 )
             }
             VerticalSpacer(dp = 1.dp)
             Row(modifier = Modifier.fillMaxWidth()) {
                 Text(
+                    modifier = Modifier.weight(1f),
                     text = transaction.type,
                     style = body2.copy(fontWeight = FontWeight.Normal),
-                    color = Gray650
+                    color = Gray650,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                 )
-                Spacer(modifier = Modifier.weight(1f))
                 Text(
-                    text = "${transaction.date}",
+                    text = "${transaction.time}",
                     style = body2.copy(fontWeight = FontWeight.Normal),
                     color = Gray650
                 )

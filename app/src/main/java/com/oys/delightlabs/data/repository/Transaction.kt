@@ -1,6 +1,7 @@
 package com.oys.delightlabs.data.repository
 
 import com.oys.delightlabs.util.toDate
+import com.oys.delightlabs.util.toTime
 import kotlinx.serialization.Serializable
 import java.util.Date
 
@@ -13,4 +14,7 @@ data class Transaction(
 ) {
     val date: Date?
         get() = timestamp.toDate()
+
+    val time : String?
+        get() = timestamp.toTime()
 }

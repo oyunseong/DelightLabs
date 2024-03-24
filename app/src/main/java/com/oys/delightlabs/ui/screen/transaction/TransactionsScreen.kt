@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -18,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -29,7 +31,10 @@ import com.oys.delightlabs.ui.screen.transaction.graph.GraphModel
 import com.oys.delightlabs.ui.screen.transaction.graph.GraphScreen
 import com.oys.delightlabs.ui.theme.Gray100
 import com.oys.delightlabs.ui.theme.Gray650
+import com.oys.delightlabs.ui.theme.body1
+import com.oys.delightlabs.ui.theme.body2
 import com.oys.delightlabs.ui.theme.body3
+import com.oys.delightlabs.ui.theme.caption1
 import com.oys.delightlabs.ui.theme.mainColor
 
 @Composable
@@ -37,7 +42,6 @@ fun TransactionsScreen(
     vm: TransactionScreenViewModel = viewModel(),
 ) {
     val uiState by vm.uiState.collectAsState()
-
 
     Column(
         modifier = Modifier
@@ -53,19 +57,32 @@ fun TransactionsScreen(
                 .verticalScroll(rememberScrollState())
         ) {
             VerticalSpacer(dp = 2.dp)
-            TabRowComponent(
-                transactionTabs = uiState.transactionTabs,
-                selectedTransactionTab = uiState.selectedTransactionTab,
-                onSelect = {
-                    vm.emitUiEvent(TransactionUiEvent.SelectTransactionTab(it))
-                }
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                TabRowComponent(
+                    transactionTabs = uiState.transactionTabs,
+                    selectedTransactionTab = uiState.selectedTransactionTab,
+                    onSelect = {
+                        vm.emitUiEvent(TransactionUiEvent.SelectTransactionTab(it))
+                    }
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                Text(
+                    text = "MM DD, YYYY",
+                    textAlign = TextAlign.End,
+                    style = caption1,
+                    color = mainColor
+                )
+            }
+            VerticalSpacer(dp = 10.dp)
             if (uiState.income != GraphModel.empty && uiState.expense != GraphModel.empty) {
                 GraphScreen(
                     incomeGraphModel = uiState.income,
                     expenseGraphModel = uiState.expense,
                 )
             }
+            VerticalSpacer(dp = 40.dp)
             RecentTransactions(
                 categories = uiState.transactionCategories,
                 selectedCategory = uiState.selectedTransactionCategory,
@@ -78,41 +95,6 @@ fun TransactionsScreen(
     }
 }
 
-// TODO isClick
-@Composable
-fun CategoryButton() {
-    Box(
-        modifier = Modifier
-            .clip(
-                shape = RoundedCornerShape(20.dp)
-            )
-            .background(color = Gray100)
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(20.dp))
-                    .background(color = mainColor)
-                    .padding(horizontal = 17.dp, vertical = 5.dp),
-                text = "Week",
-                style = body3,
-                color = Color.White
-            )
-            Text(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(20.dp))
-                    .background(color = Color.Transparent)
-                    .padding(horizontal = 17.dp, vertical = 5.dp),
-                text = "Month",
-                color = Gray650
-            )
-        }
-    }
-
-}
-
 @Composable
 fun TabRowComponent(
     transactionTabs: List<TransactionTab> = emptyList(),
@@ -121,8 +103,9 @@ fun TabRowComponent(
 ) {
     Row(
         modifier = Modifier
-            .padding(vertical = 4.dp, horizontal = 8.dp)
-            .background(Gray100, RoundedCornerShape(50)),
+            .clip(RoundedCornerShape(20.dp))
+            .background(Gray100),
+        verticalAlignment = Alignment.CenterVertically
     ) {
         transactionTabs.forEach { tab ->
             val selected = selectedTransactionTab == tab
@@ -130,10 +113,12 @@ fun TabRowComponent(
                 modifier = Modifier
                     .clip(RoundedCornerShape(50))
                     .background(if (selected) mainColor else Gray100)
+                    .padding(vertical = 5.dp, horizontal = 17.dp)
                     .noRippleClickable {
                         onSelect(tab)
                     },
                 text = tab.text,
+                style = body3,
                 color = if (selected) Color.White else Gray650
             )
         }

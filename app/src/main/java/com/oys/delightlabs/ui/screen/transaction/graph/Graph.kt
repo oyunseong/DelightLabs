@@ -22,6 +22,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.oys.delightlabs.ui.theme.mainColor
 import com.oys.delightlabs.ui.theme.subColor
 
 @Composable
@@ -31,7 +32,8 @@ fun Graph(
     expenseGraphModel: GraphModel,
     paddingSpace: Dp = 0.dp,
     graphAppearance: GraphAppearance,
-    onTouch: (Offset) -> Unit,
+    onTouchIncomeChart: (Offset) -> Unit,
+    onTouchExpenseChart: (Offset) -> Unit,
 ) {
     var incomeCoordinates = remember { mutableListOf<PointF>() }
     var expenseCoordinates = remember { mutableListOf<PointF>() }
@@ -55,7 +57,7 @@ fun Graph(
                             if (isX && isY) {
                                 Log.d("++@@", "incomeCoordinates x,y : $it")
                                 incomeIndicator.value = Offset(it.x, it.y)
-                                onTouch.invoke(Offset(it.x, it.y))
+                                onTouchIncomeChart.invoke(Offset(it.x, it.y))
                             }
                         }
                         expenseCoordinates.forEach {
@@ -64,7 +66,7 @@ fun Graph(
                             if (isX && isY) {
                                 Log.d("++@@", "expenseCoordinates x,y : $it")
                                 expenseIndicator.value = Offset(it.x, it.y)
-                                onTouch.invoke(Offset(it.x, it.y))
+                                onTouchExpenseChart.invoke(Offset(it.x, it.y))
                             }
                         }
                     }
@@ -72,7 +74,7 @@ fun Graph(
         ) {
             if(incomeIndicator.value != null){
                 drawCircle(
-                    color = Color.Red,
+                    color = mainColor,
                     radius = 10f,
                     center = incomeIndicator.value!!
                 )
@@ -80,7 +82,7 @@ fun Graph(
 
             if(expenseIndicator.value != null){
                 drawCircle(
-                    color = Color.Red,
+                    color = subColor,
                     radius = 10f,
                     center = expenseIndicator.value!!
                 )
