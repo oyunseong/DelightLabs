@@ -87,21 +87,6 @@ fun Graph(
                     }
                 }
         ) {
-            if (incomeIndicator.value != null) {
-                drawCircle(
-                    color = mainColor,
-                    radius = 10f,
-                    center = incomeIndicator.value!!
-                )
-            }
-
-            if (expenseIndicator.value != null) {
-                drawCircle(
-                    color = subColor,
-                    radius = 10f,
-                    center = expenseIndicator.value!!
-                )
-            }
             val incomeControlPoints1 = mutableListOf<PointF>()
             val incomeControlPoints2 = mutableListOf<PointF>()
             incomeCoordinates = mutableListOf()
@@ -258,6 +243,22 @@ fun Graph(
                         width = graphThickness,
                         cap = StrokeCap.Round
                     ),
+                )
+            }
+
+            if (incomeIndicator.value != null) {
+                drawCircle(
+                    color = mainColor,
+                    radius = 10f,
+                    center = incomeIndicator.value!!
+                )
+            }
+
+            if (expenseIndicator.value != null) {
+                drawCircle(
+                    color = subColor,
+                    radius = 10f,
+                    center = expenseIndicator.value!!
                 )
             }
         }
