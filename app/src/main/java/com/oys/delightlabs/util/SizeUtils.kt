@@ -1,11 +1,10 @@
-package com.oys.delightlabs.ui.extension
+package com.oys.delightlabs.util
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 
 
-//TODO 유틸 ?
 @Composable
 fun dpToSp(dp: Dp) = with(LocalDensity.current) { dp.toSp() }
 

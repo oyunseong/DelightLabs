@@ -32,11 +32,7 @@ class TransactionScreenViewModel(
 
     init {
         viewModelScope.launch {
-//            updateUiState {
-//                copy(progress = true)
-//            }
             getGraphModel(7)
-//            getTransactionsFromDate(7)
             subscribeUiEvent()
             loadTransactions()
 
@@ -129,7 +125,105 @@ class TransactionScreenViewModel(
         }
     }
 
-    fun getTransactionsFromDate(day: Int) {
+    private fun getGraphModel(day: Int) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                reducer {
+                    copy(progress = true)
+                }
+
+                val incomeTransactions =
+                    transactionRepository.getRecentTransactions(day, TransactionType.INCOME)
+                val expenseTransactions =
+                    transactionRepository.getRecentTransactions(day, TransactionType.EXPENSE)
+
+                val incomeAmount: List<Float> = incomeTransactions.map { it.amount }
+                val expenseAmount: List<Float> = expenseTransactions.map { it.amount }
+
+                val incomeTimeStamps: List<String> = incomeTransactions.map { it.timestamp }
+                val expenseTimeStamps: List<String> = expenseTransactions.map { it.timestamp }
+
+                val max = maxOf(incomeAmount.max(), expenseAmount.max())
+                val min = minOf(incomeAmount.min(), expenseAmount.min())
+
+                val step = getStep(
+                    max = max,
+                    min = min,
+                    divide = 30,
+                )
+
+                val xValues = IntRange(0, day - 1).toList()
+                reducer {
+                    copy(
+                        income = GraphModel(
+                            xValues = xValues,
+                            yValues = generateYValues(
+                                min = min,
+                                max = max,
+                                step = step
+                            ),
+                            points = incomeAmount,
+                            timeStamps = incomeTimeStamps,
+                            verticalStep = step,
+                        ),
+                        expense = GraphModel(
+                            xValues = xValues,
+                            yValues = generateYValues(
+                                min = min,
+                                max = max,
+                                step = step
+                            ),
+                            points = expenseAmount,
+                            timeStamps = expenseTimeStamps,
+                            verticalStep = step,
+                        )
+                    )
+                }
+            }catch (e:Exception){
+                e.printStackTrace()
+            }finally {
+                reducer {
+                    copy(progress = false)
+                }
+            }
+        }
+    }
+
+
+    private fun getStep(
+        max: Float,
+        min: Float,
+        divide: Int = 10,
+    ): Float {
+        return (max - min) / divide
+    }
+
+    private fun generateYValues(
+        min: Float,
+        max: Float,
+        step: Float
+    ): List<Float> {
+        val result = mutableListOf<Float>()
+        var currentValue = min
+        while (currentValue <= max) {
+            result.add(currentValue)
+            currentValue += step
+        }
+        return result
+    }
+
+    fun showTransactionNotification(context: Context) {
+        viewModelScope.launch {
+            delay(20000)
+            Toast.makeText(context, "입출금 발생", Toast.LENGTH_SHORT).show()
+            reducer {
+                copy(unReadNotification = true)
+            }
+        }
+    }
+
+    /*
+        fun getTransactionsFromDate(day: Int) {
         viewModelScope.launch {
             try {
                 reducer {
@@ -197,90 +291,5 @@ class TransactionScreenViewModel(
 
         }
     }
-
-    private fun getGraphModel(day: Int) {
-        viewModelScope.launch(Dispatchers.IO) {
-            val incomeTransactions =
-                transactionRepository.getRecentTransactions(day, TransactionType.INCOME)
-            val expenseTransactions =
-                transactionRepository.getRecentTransactions(day, TransactionType.EXPENSE)
-
-            val incomeAmount: List<Float> = incomeTransactions.map { it.amount }
-            val expenseAmount: List<Float> = expenseTransactions.map { it.amount }
-
-            val incomeTimeStamps: List<String> = incomeTransactions.map { it.timestamp }
-            val expenseTimeStamps: List<String> = expenseTransactions.map { it.timestamp }
-
-            val max = maxOf(incomeAmount.max(), expenseAmount.max())
-            val min = minOf(incomeAmount.min(), expenseAmount.min())
-
-            val step = getStep(
-                max = max,
-                min = min,
-                divide = 30,
-            )
-
-            val xValues = IntRange(0, day - 1).toList()
-            reducer {
-                copy(
-                    income = GraphModel(
-                        xValues = xValues,
-                        yValues = generateYValues(
-                            min = min,
-                            max = max,
-                            step = step
-                        ),
-                        points = incomeAmount,
-                        timeStamps = incomeTimeStamps,
-                        verticalStep = step,
-                    ),
-                    expense = GraphModel(
-                        xValues = xValues,
-                        yValues = generateYValues(
-                            min = min,
-                            max = max,
-                            step = step
-                        ),
-                        points = expenseAmount,
-                        timeStamps = expenseTimeStamps,
-                        verticalStep = step,
-                    )
-                )
-            }
-
-        }
-    }
-
-
-    private fun getStep(
-        max: Float,
-        min: Float,
-        divide: Int = 10,
-    ): Float {
-        return (max - min) / divide
-    }
-
-    private fun generateYValues(
-        min: Float,
-        max: Float,
-        step: Float
-    ): List<Float> {
-        val result = mutableListOf<Float>()
-        var currentValue = min
-        while (currentValue <= max) {
-            result.add(currentValue)
-            currentValue += step
-        }
-        return result
-    }
-
-    fun showTransactionNotification(context: Context) {
-        viewModelScope.launch {
-            delay(20000)
-            Toast.makeText(context, "입출금 발생", Toast.LENGTH_SHORT).show()
-            reducer {
-                copy(unReadNotification = true)
-            }
-        }
-    }
+     */
 }
