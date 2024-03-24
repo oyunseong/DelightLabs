@@ -25,15 +25,18 @@ import androidx.compose.ui.unit.dp
 import com.oys.delightlabs.ui.theme.mainColor
 import com.oys.delightlabs.ui.theme.subColor
 
+data class TouchedValue(val offset: Offset, val value: Float, val timeStamp: String)
+
 @Composable
 fun Graph(
     modifier: Modifier,
     incomeGraphModel: GraphModel,
     expenseGraphModel: GraphModel,
+    graphThickness: Float,
+    iscolorAreaUnderChart: Boolean,
     paddingSpace: Dp = 0.dp,
-    graphAppearance: GraphAppearance,
-    onTouchIncomeChart: (Offset) -> Unit,
-    onTouchExpenseChart: (Offset) -> Unit,
+    onTouchIncomeChart: (TouchedValue) -> Unit,
+    onTouchExpenseChart: (TouchedValue) -> Unit,
 ) {
     var incomeCoordinates = remember { mutableListOf<PointF>() }
     var expenseCoordinates = remember { mutableListOf<PointF>() }
@@ -51,28 +54,40 @@ fun Graph(
                 .pointerInput(Unit) {
                     val touchScope = 52  // 터치 영역
                     detectTapGestures { offset ->
-                        incomeCoordinates.forEach {
-                            val isX = offset.x < it.x + touchScope && offset.x > it.x - touchScope
-                            val isY = offset.y < it.y + touchScope && offset.y > it.y - touchScope
+                        incomeCoordinates.forEachIndexed { index, coordinate ->
+                            val isX =
+                                offset.x < coordinate.x + touchScope && offset.x > coordinate.x - touchScope
+                            val isY =
+                                offset.y < coordinate.y + touchScope && offset.y > coordinate.y - touchScope
                             if (isX && isY) {
-                                Log.d("++@@", "incomeCoordinates x,y : $it")
-                                incomeIndicator.value = Offset(it.x, it.y)
-                                onTouchIncomeChart.invoke(Offset(it.x, it.y))
+                                val touchedValue = TouchedValue(
+                                    offset = Offset(coordinate.x, coordinate.y),
+                                    value = incomeGraphModel.points[index],
+                                    timeStamp = incomeGraphModel.timeStamps[index]
+                                )
+                                incomeIndicator.value = touchedValue.offset
+                                onTouchIncomeChart.invoke(touchedValue)
                             }
                         }
-                        expenseCoordinates.forEach {
-                            val isX = offset.x < it.x + touchScope && offset.x > it.x - touchScope
-                            val isY = offset.y < it.y + touchScope && offset.y > it.y - touchScope
+                        expenseCoordinates.forEachIndexed { index, coordinate ->
+                            val isX =
+                                offset.x < coordinate.x + touchScope && offset.x > coordinate.x - touchScope
+                            val isY =
+                                offset.y < coordinate.y + touchScope && offset.y > coordinate.y - touchScope
                             if (isX && isY) {
-                                Log.d("++@@", "expenseCoordinates x,y : $it")
-                                expenseIndicator.value = Offset(it.x, it.y)
-                                onTouchExpenseChart.invoke(Offset(it.x, it.y))
+                                val touchedValue = TouchedValue(
+                                    offset = Offset(coordinate.x, coordinate.y),
+                                    value = expenseGraphModel.points[index],
+                                    timeStamp = incomeGraphModel.timeStamps[index]
+                                )
+                                expenseIndicator.value = touchedValue.offset
+                                onTouchExpenseChart.invoke(touchedValue)
                             }
                         }
                     }
                 }
         ) {
-            if(incomeIndicator.value != null){
+            if (incomeIndicator.value != null) {
                 drawCircle(
                     color = mainColor,
                     radius = 10f,
@@ -80,7 +95,7 @@ fun Graph(
                 )
             }
 
-            if(expenseIndicator.value != null){
+            if (expenseIndicator.value != null) {
                 drawCircle(
                     color = subColor,
                     radius = 10f,
@@ -112,26 +127,12 @@ fun Graph(
                 val x1 = (xAxisSpace * i)
                 val y1 = size.height - (yAxisSpace * ((it - min) / verticalStep))
                 incomeCoordinates.add(PointF(x1, y1))
-//                if (graphAppearance.isCircleVisible) {  // 그래프 점 표시
-//                    drawCircle(
-//                        color = mainColor,
-//                        radius = 10f,
-//                        center = Offset(x1, y1)
-//                    )
-//                }
             }
 
             expenseGraphModel.points.forEachIndexed { i, it ->
                 val x1 = xAxisSpace * i
                 val y1 = size.height - (yAxisSpace * ((it - min) / verticalStep))
                 expenseCoordinates.add(PointF(x1, y1))
-//                if (graphAppearance.isCircleVisible) {
-//                    drawCircle(
-//                        color = subColor,
-//                        radius = 10f,
-//                        center = Offset(x1, y1)
-//                    )
-//                }
             }
 
             // 3차 베지에 곡선을 그리기 위한 좌표 저장
@@ -189,12 +190,12 @@ fun Graph(
                     }
 
 //             그라데이션 색상 추가
-                if (graphAppearance.iscolorAreaUnderChart) {
+                if (iscolorAreaUnderChart) {
                     drawPath(
                         fillPath,
                         brush = Brush.verticalGradient(
                             listOf(
-                                graphAppearance.colorAreaUnderChart,
+                                mainColor,
                                 Color.Transparent,
                             ),
                             endY = size.height
@@ -203,9 +204,9 @@ fun Graph(
                 }
                 drawPath(
                     stroke,
-                    color = graphAppearance.graphColor,
+                    color = mainColor,
                     style = Stroke(
-                        width = graphAppearance.graphThickness,
+                        width = graphThickness,
                         cap = StrokeCap.Round
                     )
                 )
@@ -238,7 +239,7 @@ fun Graph(
                     }
 
 //             그라데이션 색상 추가
-                if (graphAppearance.iscolorAreaUnderChart) {
+                if (iscolorAreaUnderChart) {
                     drawPath(
                         expenseFillPath,
                         brush = Brush.verticalGradient(
@@ -254,7 +255,7 @@ fun Graph(
                     expenseStroke,
                     color = subColor,
                     style = Stroke(
-                        width = graphAppearance.graphThickness,
+                        width = graphThickness,
                         cap = StrokeCap.Round
                     ),
                 )

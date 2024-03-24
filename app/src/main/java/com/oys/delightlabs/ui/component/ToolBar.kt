@@ -1,5 +1,6 @@
 package com.oys.delightlabs.ui.component
 
+import android.icu.text.CaseMap.Title
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -22,6 +23,8 @@ import com.oys.delightlabs.ui.theme.subhead2
 fun ToolBar(
     modifier: Modifier = Modifier,
     title: String = "",
+    isUnread: Boolean = false,
+    onClickTitle: () -> Unit = {},  // 알람을 오게하기 위함
     onClickAlarm: () -> Unit = {},
     height: Int = 76 // 36 + 20 + 20
 ) {
@@ -32,7 +35,9 @@ fun ToolBar(
             .padding(horizontal = 28.dp, vertical = 20.dp),
     ) {
         Text(
-            modifier = Modifier.align(Alignment.CenterStart),
+            modifier = Modifier
+                .align(Alignment.CenterStart)
+                .noRippleClickable { onClickTitle.invoke() },
             text = title,
             style = subhead2,
             color = Color.Black
@@ -43,7 +48,7 @@ fun ToolBar(
                 .align(Alignment.CenterEnd)
                 .size(24.dp)
                 .noRippleClickable { onClickAlarm.invoke() },
-            painter = painterResource(id = R.drawable.ic_notification),
+            painter = painterResource(id = if (isUnread) R.drawable.ic_unread_notification else R.drawable.ic_notification),
             contentDescription = ""
         )
     }

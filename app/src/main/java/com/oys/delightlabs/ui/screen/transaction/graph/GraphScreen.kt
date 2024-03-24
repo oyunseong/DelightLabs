@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.width
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -26,24 +25,32 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.oys.delightlabs.data.repository.fakeToday
 import com.oys.delightlabs.ui.component.HorizontalSpacer
 import com.oys.delightlabs.ui.component.VerticalSpacer
 import com.oys.delightlabs.ui.extension.pxToDp
 import com.oys.delightlabs.ui.extension.toPx
+import com.oys.delightlabs.ui.screen.transaction.TransactionTab
 import com.oys.delightlabs.ui.theme.Gray400
 import com.oys.delightlabs.ui.theme.body3
 import com.oys.delightlabs.ui.theme.caption1
 import com.oys.delightlabs.ui.theme.mainColor
 import com.oys.delightlabs.ui.theme.subColor
+import com.oys.delightlabs.util.toDate
+import com.oys.delightlabs.util.toDay
+import com.oys.delightlabs.util.toDayAfterDays
+import com.oys.delightlabs.util.toFormattedDateAfter30Days
+import com.oys.delightlabs.util.toFormattedDateTime
+import com.oys.delightlabs.util.toFormattedDateType2
 import kotlinx.coroutines.delay
 
 
 @Composable
 fun GraphScreen(
+    type: TransactionTab,
     incomeGraphModel: GraphModel,
     expenseGraphModel: GraphModel,
 ) {
@@ -52,8 +59,8 @@ fun GraphScreen(
         delay(1)
         flag = true
     })
-    var incomeBoxOffset by remember { mutableStateOf<Offset?>(null) }
-    var expenseBoxOffset by remember { mutableStateOf<Offset?>(null) }
+    var incomeBoxOffset by remember { mutableStateOf<TouchedValue?>(null) }
+    var expenseBoxOffset by remember { mutableStateOf<TouchedValue?>(null) }
     Box {
         Column {
             Row {
@@ -83,15 +90,8 @@ fun GraphScreen(
                             .height(161.dp),
                         incomeGraphModel = incomeGraphModel,
                         expenseGraphModel = expenseGraphModel,
-                        graphAppearance = GraphAppearance(
-                            mainColor,
-                            MaterialTheme.colorScheme.primary,
-                            2.dp.toPx(),
-                            true,
-                            mainColor.copy(alpha = 0.13f),
-                            true,
-                            MaterialTheme.colorScheme.secondary,
-                        ),
+                        graphThickness = 2.dp.toPx(),
+                        iscolorAreaUnderChart = true,
                         onTouchIncomeChart = {
                             incomeBoxOffset = it
                         },
@@ -103,13 +103,13 @@ fun GraphScreen(
             )
             Row {
                 Text(
-                    text = "DD1",
+                    text = if (type == TransactionTab.WEEK) "${fakeToday.toDay()}" else fakeToday.toFormattedDateType2(),
                     style = body3.copy(fontWeight = FontWeight.Medium),
                     color = Gray400
                 )
                 Spacer(modifier = Modifier.weight(1f))
                 Text(
-                    text = "DD2",
+                    text = if (type == TransactionTab.WEEK) "${fakeToday.toDayAfterDays(7)}" else fakeToday.toFormattedDateAfter30Days(),
                     style = body3.copy(fontWeight = FontWeight.Medium),
                     color = Gray400
                 )
@@ -121,10 +121,11 @@ fun GraphScreen(
             var size by remember { mutableFloatStateOf(0f) }
             InfoBox(
                 modifier = Modifier.offset(
-                    x = pxToDp(pixels = it.x - size),
-                    y = pxToDp(pixels = it.y - 3f)
+                    x = pxToDp(pixels = it.offset.x - size),
+                    y = pxToDp(pixels = it.offset.y - 3f)
                 ),
-                amount = 1.1f,
+                amount = it.value,
+                time = it.timeStamp.toDate()!!.time.toFormattedDateTime(),
                 background = mainColor,
                 boxWidth = { width ->
                     size = width / 2f
@@ -136,10 +137,11 @@ fun GraphScreen(
             var size by remember { mutableFloatStateOf(0f) }
             InfoBox(
                 modifier = Modifier.offset(
-                    x = pxToDp(pixels = it.x - size),
-                    y = pxToDp(pixels = it.y - 3f)
+                    x = pxToDp(pixels = it.offset.x - size),
+                    y = pxToDp(pixels = it.offset.y - 3f)
                 ),
-                amount = 1.1f,
+                amount = it.value,
+                time = it.timeStamp.toDate()!!.time.toFormattedDateTime(),
                 background = subColor,
                 boxWidth = { width ->
                     size = width / 2f

@@ -21,12 +21,12 @@ import com.oys.delightlabs.R
 import com.oys.delightlabs.ui.component.VerticalSpacer
 import com.oys.delightlabs.ui.theme.body1
 import com.oys.delightlabs.ui.theme.body2
-import com.oys.delightlabs.ui.theme.mainColor
 
 @Composable
 fun InfoBox(
     modifier: Modifier = Modifier,
     amount: Float,
+    time: String,
     background: Color,
     boxWidth: (Float) -> Unit = {},
 ) {
@@ -55,7 +55,7 @@ fun InfoBox(
                 )
                 VerticalSpacer(dp = 1.dp)
                 Text(
-                    text = "Nov 23, 00:00",
+                    text = time,
                     style = body1,
                     color = Color.White
                 )

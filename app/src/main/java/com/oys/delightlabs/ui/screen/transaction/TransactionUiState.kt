@@ -6,6 +6,8 @@ import com.oys.delightlabs.ui.screen.transaction.graph.GraphModel
 sealed interface TransactionUiEvent {
     data class SelectTransactionTab(val tab: TransactionTab) : TransactionUiEvent
     data class SelectTransactionCategory(val category: TransactionCategory) : TransactionUiEvent
+    object NotificationEvent : TransactionUiEvent
+    object OnClickNotification : TransactionUiEvent
 }
 
 data class TransactionUiState(
@@ -15,6 +17,7 @@ data class TransactionUiState(
     val selectedTransactionCategory: TransactionCategory = TransactionCategory.ALL,
     val transactionPages: List<TransactionPage> = emptyList(),
     val progress: Boolean = false, //todo ui에 추가하기
+    val unReadNotification: Boolean = false,
     val income: GraphModel = GraphModel(),
     val expense: GraphModel = GraphModel(),
 )

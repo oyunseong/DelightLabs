@@ -4,6 +4,7 @@ data class GraphModel(
     val xValues: List<Int> = emptyList(),
     val yValues: List<Float> = emptyList(),
     val points: List<Float> = emptyList(),
+    val timeStamps: List<String> = emptyList(),
     val verticalStep: Float = 0f,
 ) {
     companion object {
